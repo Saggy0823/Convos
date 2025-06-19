@@ -29,14 +29,14 @@ const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
 // Onboarding Elements
 const onboardingModal = document.getElementById('onboarding-modal');
 const onboardingStep1 = document.getElementById('onboarding-step-1');
-const onboardingStep2 = document.getElementById('onboarding-step-2');
-const onboardingStep3 = document.getElementById('onboarding-step-3');
-const onboardingUserNameInput = document.getElementById('onboarding-user-name');
-const onboardingUserHobbiesInput = document.getElementById('onboarding-user-hobbies');
-const onboardingPartnerNameInput = document.getElementById('onboarding-partner-name');
-const onboardingNext1 = document.getElementById('onboarding-next-1');
-const onboardingNext2 = document.getElementById('onboarding-next-2');
-const onboardingFinish = document.getElementById('onboarding-finish');
+const onboardingStep2 = document = document.getElementById('onboarding-step-2');
+const onboardingStep3 = document = document.getElementById('onboarding-step-3');
+const onboardingUserNameInput = document = document.getElementById('onboarding-user-name');
+const onboardingUserHobbiesInput = document = document.getElementById('onboarding-user-hobbies');
+const onboardingPartnerNameInput = document = document.getElementById('onboarding-partner-name');
+const onboardingNext1 = document = document.getElementById('onboarding-next-1');
+const onboardingNext2 = document = document.getElementById('onboarding-next-2');
+const onboardingFinish = document = document.getElementById('onboarding-finish');
 
 // Chat Mode Buttons
 const voiceChatModeBtn = document.getElementById('voice-chat-mode-btn');
@@ -658,11 +658,12 @@ Your primary tasks are:
 2.  **Explain Briefly:** If you made a correction, give a very brief explanation of *why* it was corrected (e.g., "tense correction", "word order"). If no correction is needed, state that the original sentence was correct.
 3.  **Conversational Response:** Provide a friendly, natural, and concise conversational response to the user's input, engaging them further.
 
-Output your response as a JSON object with the following keys. Ensure the values for CORRECTED and Explanation are plain strings, not containing additional JSON or formatting:
+Output your response as a JSON object with the following keys. Ensure the values for "CORRECTED" and "Explanation" are **plain strings only**, containing no extra formatting, parentheses, or nested information.
+
 {
-  "CORRECTED": "[corrected or original sentence, e.g., 'I am going to the store.']",
-  "Explanation": "[brief explanation or 'None', e.g., 'Subject-verb agreement']",
-  "RESPONSE": "[your conversational response, e.g., 'That's great! What are you planning to buy there?']"
+  "CORRECTED": "[the corrected or original sentence as a plain string]",
+  "Explanation": "[a brief explanation as a plain string, or 'None']",
+  "RESPONSE": "[your conversational response as a plain string]"
 }
 
 Example if correction is needed:
@@ -735,11 +736,8 @@ Now, please respond to: "%s"`;
         let geminiText = geminiData.candidates && geminiData.candidates.length > 0 &&
                            geminiData.candidates[0].content && geminiData.candidates[0].content.parts &&
                            geminiData.candidates[0].content.parts.length > 0
-                           ? geminiData[0].content.parts[0].text // Assuming the response is often in this format
-                           : (geminiData.candidates && geminiData.candidates[0].content && geminiData.candidates[0].content.text)
-                             ? geminiData.candidates[0].content.text
-                             : '';
-
+                           ? geminiData.candidates[0].content.parts[0].text
+                           : '';
 
         if (!geminiText) {
             alertUser('AI response was empty or malformed.');
@@ -765,10 +763,18 @@ Now, please respond to: "%s"`;
             correctedText = parsedAiResponse.CORRECTED || text; // Default to original if corrected is missing
             correctionExplanation = parsedAiResponse.Explanation || 'None';
             
-            // Clean up explanation if it's "None" or empty
-            if (correctionExplanation.toLowerCase() === 'none' || correctionExplanation.trim() === '') {
-                correctionExplanation = null;
+            // Clean up explanation if it's "None" or empty, or contains unwanted phrases
+            if (correctionExplanation) {
+                correctionExplanation = correctionExplanation.replace(/^(Explanation: )?/, '').trim(); // Remove "Explanation: " if present
+                if (correctionExplanation.toLowerCase() === 'none' || correctionExplanation.trim() === '') {
+                    correctionExplanation = null;
+                }
             }
+            if (correctedText) {
+                 // Remove any trailing (Explanation: ...) from the corrected text if the AI accidentally put it there
+                correctedText = correctedText.replace(/\s*\(Explanation:[\s\S]*?\)$/, '').trim();
+            }
+
 
         } catch (jsonError) {
             console.warn("processUserInput: Failed to parse AI response as JSON. Displaying raw text as conversational. Error:", jsonError);
