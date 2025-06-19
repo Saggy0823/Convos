@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Mastery Partner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* Base styles from Tailwind */
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* Custom Font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); /* Subtle gradient background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #374151; /* Default text color */
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 680px; /* Slightly wider for better content display */
+            width: 100%;
+            height: 90vh; /* Responsive height */
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05); /* Stronger shadow */
+            overflow: hidden;
+            border: 1px solid #e2e8f0; /* Subtle border */
+        }
+
+        @media (min-width: 768px) { /* md breakpoint */
+            .chat-container {
+                height: 85vh; /* Slightly taller on tablet */
+            }
+        }
+
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .chat-container {
+                height: 80vh; /* Optimal height on desktop */
+            }
+        }
+
+        /* Header Styling */
+        header {
+            background: linear-gradient(90deg, #4c51bf 0%, #667eea 100%); /* Professional blue gradient */
+            color: white;
+            padding: 1.25rem 1.5rem; /* More padding */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            position: relative; /* For potential future elements */
+            z-index: 10; /* Ensure it stays on top */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+        }
+
+        #language-toggle {
+            background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+            backdrop-filter: blur(5px); /* Frosted glass effect */
+            color: white;
+            font-weight: 500;
+            padding: 0.6rem 1.25rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.1s ease-in-out; /* Simpler transition */
+            cursor: pointer;
+            margin-left: auto; /* Push to right, next to settings button */
+        }
+
+        #language-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: none; /* No transform */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Settings Button */
+        #settings-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.1s ease-in-out; /* Simpler transition */
+            cursor: pointer;
+            margin-left: 0.75rem; /* Space from language toggle */
+        }
+        #settings-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: none; /* No transform */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        #settings-button i {
+            font-size: 1.25rem;
+        }
+
+
+        /* Chat Mode Selector Styling */
+        .chat-mode-selector {
+            background-color: #f8fafc; /* Lighter background */
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem; /* Space between buttons */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle shadow */
+            z-index: 5; /* Below header */
+        }
+
+        .mode-button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.1s ease-in-out; /* Simpler transition */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            background-color: white;
+            color: #4a5568;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer;
+        }
+
+        .mode-button:hover:not(.active) {
+            background-color: #f0f4f8;
+            transform: none; /* No transform */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .mode-button.active {
+            background: linear-gradient(45deg, #4c51bf 0%, #6b72f1 100%);
+            color: white;
+            border-color: #4c51bf;
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+        }
+        .mode-button.active:hover {
+            transform: none; /* No transform when active and hovered */
+            box-shadow: 0 4px 10px rgba(76, 81, 191, 0.3);
+        }
+
+
+        /* Chat Box Styling */
+        #chat-box {
+            flex: 1;
+            padding: 1.5rem; /* More internal padding */
+            overflow-y: auto;
+            background-color: #f8fafc; /* Lighter background for chat area */
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem; /* Increased gap between messages */
+            scroll-behavior: smooth; /* Smooth scrolling for new messages */
+            position: relative;
+        }
+
+        /* Message Styling */
+        .message {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .message .avatar {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            overflow: hidden;
+            background-color: #cbd5e1; /* Default avatar background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: #4a5568;
+            border: 2px solid rgba(255, 255, 255, 0.5); /* Avatar border */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message .avatar {
+            order: 2; /* Move user avatar to the right */
+            margin-left: 0.75rem;
+            background-color: #6366f1; /* User avatar specific color */
+            color: white;
+        }
+
+        .ai-message .avatar {
+            order: 1; /* AI avatar to the left */
+            margin-right: 0.75rem;
+        }
+
+        .message-bubble {
+            padding: 0.9rem 1.2rem; /* More generous padding */
+            border-radius: 1.25rem; /* Rounded corners for bubbles */
+            max-width: 75%; /* Slightly narrower bubbles */
+            word-wrap: break-word;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* Subtle shadow for depth */
+            position: relative;
+            font-size: 0.95rem; /* Slightly larger text */
+            line-height: 1.4;
+        }
+
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); /* Purple gradient for user */
+            color: white;
+            border-bottom-right-radius: 0.5rem; /* Tapered corner for sender side */
+        }
+
+        .ai-message .message-bubble {
+            background-color: #e2e8f0; /* Lighter background for AI */
+            color: #2d3748;
+            border-bottom-left-radius: 0.5rem; /* Tapered corner for sender side */
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem; /* Gap between text and play button */
+        }
+
+        /* Message timestamp */
+        .message-timestamp {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            opacity: 0.8;
+        }
+        .user-message .message-timestamp {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .ai-message .message-timestamp {
+            text-align: left;
+        }
+
+        /* Play Audio Button */
+        .play-audio-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: #4f46e5; /* Distinct blue for play button */
+            align-self: flex-end; /* Align to the bottom right of the bubble */
+            margin-top: 0.5rem;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.1s ease-in-out; /* Simpler transition */
+        }
+
+        .play-audio-btn:hover {
+            color: #3730a3; /* Darker on hover */
+            transform: none; /* No transform */
+        }
+        .play-audio-btn:disabled {
+            color: #9ca3af; /* Gray out when disabled/loading */
+            cursor: not-allowed;
+        }
+
+        /* Correction Tooltip */
+        .correction-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted #9ca3af;
+            color: #4f46e5; /* Highlight corrected text */
+            font-weight: 500;
+        }
+
+        .correction-tooltip {
+            visibility: hidden;
+            min-width: 200px;
+            max-width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            position: absolute;
+            z-index: 20; /* Above everything else */
+            bottom: calc(100% + 10px); /* Position above the text with some space */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.1s; /* Simpler transition */
+            font-size: 0.85rem;
+            line-height: 1.3;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            pointer-events: none; /* Allows click-through to underlying elements */
+        }
+
+        .correction-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -8px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .correction-wrapper:hover .correction-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%); /* No transform */
+        }
+
+        /* Input Area Styling */
+        .input-area {
+            padding: 1.25rem 1.5rem;
+            background-color: #fefefe; /* Near white background */
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow on top */
+            position: relative;
+            z-index: 10;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 0.9rem 1.25rem; /* More vertical padding */
+            border: 1px solid #cbd5e1; /* Softer border */
+            border-radius: 9999px;
+            font-size: 1rem;
+            transition: all 0.1s ease-in-out; /* Simpler transition */
+            background-color: #fefefe;
+            outline: none;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        #user-input:focus {
+            border-color: #4c51bf; /* Deeper blue on focus */
+            box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.3); /* Ring effect */
+            background-color: white;
+        }
+
+        .action-button {
+            width: 52px; /* Slightly larger buttons */
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 9999px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+            transition: all 0.1s ease-in-out; /* Simpler transition */
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            transform: none; /* No transform */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-button:active {
+            transform: none; /* No transform */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #mic-button {
+            background: linear-gradient(45deg, #ef4444 0%, #f87171 100%); /* Red gradient */
+        }
+
+        #mic-button.recording {
+            background: linear-gradient(45deg, #f97316 0%, #fb923c 100%); /* Orange gradient for recording */
+        }
+
+        #mic-button:disabled, #send-button:disabled {
+            background: #9ca3af; /* Gray out when disabled */
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        #send-button {
+            background: linear-gradient(45deg, #4c51bf 0%, #6b72f1 100%); /* Blue gradient for send */
+        }
+
+        /* Loading Dots */
+        .typing-indicator span {
+            display: inline-block;
+            background-color: #6b7280;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 0 2px;
+        }
+        @keyframes bounce-1 { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+        @keyframes bounce-2 { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+        @keyframes bounce-3 { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } }
+        .animate-bounce-1 { animation: bounce-1 1.4s infinite ease-in-out; }
+        .animate-bounce-2 { animation: bounce-2 1.4s infinite ease-in-out 0.2s; }
+        .animate-bounce-3 { animation: bounce-3 1.4s infinite ease-in-out 0.4s; }
+
+
+        /* Modals (Alert and Settings) */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Specific for Settings Modal */
+        #settings-modal .modal-content {
+            text-align: left;
+            padding: 2rem;
+        }
+        #settings-modal .modal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+        }
+        #settings-modal .modal-content label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+        }
+        #settings-modal .modal-content input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: white;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.1s, box-shadow 0.1s;
+        }
+        #settings-modal .modal-content input[type="text"]:focus {
+            outline: none;
+            border-color: #4c51bf;
+            box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.3);
+        }
+        #settings-modal .modal-buttons {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        #settings-modal .modal-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.1s ease-in-out;
+            border: none;
+            cursor: pointer;
+        }
+        #settings-modal #save-settings-btn {
+            background: linear-gradient(45deg, #4c51bf 0%, #6b72f1 100%);
+            color: white;
+        }
+        #settings-modal #save-settings-btn:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #settings-modal #cancel-settings-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        #settings-modal #cancel-settings-btn:hover {
+            background-color: #cbd5e1;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Onboarding Modal Specific Styles */
+        #onboarding-modal .modal-content {
+            max-width: 500px;
+            padding: 2.5rem;
+            position: relative;
+        }
+        #onboarding-modal .onboarding-step {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2.5rem;
+            pointer-events: none;
+        }
+        #onboarding-modal .onboarding-step.active {
+            position: relative;
+            display: flex;
+            pointer-events: auto;
+        }
+        #onboarding-modal .onboarding-step h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+        }
+        #onboarding-modal .onboarding-step p {
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        #onboarding-modal .onboarding-step input {
+            width: 80%;
+            padding: 0.9rem 1.25rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 9999px;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.1s ease-in-out;
+        }
+        #onboarding-modal .onboarding-step input:focus {
+            outline: none;
+            border-color: #4c51bf;
+            box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.3);
+        }
+        #onboarding-modal .onboarding-step button {
+            background: linear-gradient(45deg, #4c51bf 0%, #6b72f1 100%);
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.1s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+        #onboarding-modal .onboarding-step button:hover {
+            transform: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        #onboarding-modal .onboarding-step button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .onboarding-progress {
+            position: absolute;
+            bottom: 1.5rem;
+            width: 100%;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="font-inter">
+    <!-- Main Chat UI (Initially hidden, shown after onboarding) -->
+    <div id="main-chat-ui" class="chat-container hidden">
+        <header>
+            <h1 class="text-3xl font-bold">Language Partner</h1>
+            <button id="language-toggle" class="language-toggle">
+                English ↔ Hindi
+            </button>
+            <button id="settings-button" class="settings-button">
+                <i class="fas fa-cog"></i>
+            </button>
+        </header>
+
+        <div class="chat-mode-selector">
+            <button id="voice-chat-mode-btn" class="mode-button active">
+                <i class="fas fa-microphone mr-2"></i> Voice Chat
+            </button>
+            <button id="type-chat-mode-btn" class="mode-button">
+                <i class="fas fa-keyboard mr-2"></i> Type Chat
+            </button>
+        </div>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-5">
+            <!-- Initial AI welcome message will be dynamically added by script.js after settings are loaded -->
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message..." class="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 hidden">
+            <div id="mic-and-send-container" class="flex flex-1 space-x-3 justify-end">
+                <button id="mic-button" class="action-button">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="send-button" class="action-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal Structure -->
+    <div id="custom-alert-modal" class="modal-overlay hidden">
+        <div class="modal-content text-gray-800">
+            <p class="text-lg font-semibold mb-4" id="alert-message-text"></p>
+            <button id="alert-ok-button" class="text-white bg-blue-500 hover:bg-blue-600 font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">OK</button>
+        </div>
+    </div>
+
+    <!-- User Settings Modal (for modifying after onboarding) -->
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-center">Personalize Your Experience</h2>
+
+            <label for="settings-user-name-input">Your Name:</label>
+            <input type="text" id="settings-user-name-input" placeholder="e.g., Sneha">
+
+            <label for="settings-user-hobbies-input">Your Hobbies (comma-separated):</label>
+            <input type="text" id="settings-user-hobbies-input" placeholder="e.g., reading, coding, hiking">
+
+            <label for="settings-partner-name-input">Your Partner's Name:</label>
+            <input type="text" id="settings-partner-name-input" placeholder="e.g., Buddy, Echo">
+
+            <div class="modal-buttons">
+                <button id="cancel-settings-btn" class="py-2 px-4 rounded-full">Cancel</button>
+                <button id="save-settings-btn" class="py-2 px-4 rounded-full">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding Journey Modal -->
+    <div id="onboarding-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <!-- Onboarding Step 1: User Name -->
+            <div id="onboarding-step-1" class="onboarding-step active">
+                <h2>👋 Welcome!</h2>
+                <p>Let's get started. What's your name?</p>
+                <input type="text" id="onboarding-user-name" placeholder="Your Name">
+                <button id="onboarding-next-1" disabled>Next <i class="fas fa-arrow-right ml-2"></i></button>
+                <span class="onboarding-progress mt-4">Step 1 of 3</span>
+            </div>
+
+            <!-- Onboarding Step 2: Hobbies -->
+            <div id="onboarding-step-2" class="onboarding-step">
+                <h2>🤩 Great to meet you!</h2>
+                <p>Tell me, what are some of your hobbies?</p>
+                <input type="text" id="onboarding-user-hobbies" placeholder="e.g., reading, coding, hiking">
+                <button id="onboarding-next-2" disabled>Next <i class="fas fa-arrow-right ml-2"></i></button>
+                <span class="onboarding-progress mt-4">Step 2 of 3</span>
+            </div>
+
+            <!-- Onboarding Step 3: Partner Name -->
+            <div id="onboarding-step-3" class="onboarding-step">
+                <h2>✨ Almost there!</h2>
+                <p>What would you like to call me, your AI Language Partner?</p>
+                <input type="text" id="onboarding-partner-name" placeholder="e.g., Buddy, Echo">
+                <button id="onboarding-finish" disabled>Let's Begin! <i class="fas fa-check-circle ml-2"></i></button>
+                <span class="onboarding-progress mt-4">Step 3 of 3</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
