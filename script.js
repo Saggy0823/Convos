@@ -530,7 +530,7 @@ function addMessage(text, sender, correctedOriginalText = null, correctionExplan
         // Use a wrapper with tooltip for the original text and explanation
         correctionInfoSpan.innerHTML = `
             <span class="correction-wrapper cursor-help border-b border-dotted border-gray-500">
-                Original: "${correctedOriginalText}"
+                Corrected: "${correctedOriginalText}"
                 <span class="correction-tooltip bg-gray-800 text-white p-2 rounded-lg text-xs absolute z-10 bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-normal">
                     Explanation: ${correctionExplanation}
                 </span>
