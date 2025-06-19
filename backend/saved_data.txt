@@ -1,0 +1,5 @@
+{
+    "userName": "sagar",
+    "userHobbies": "reading",
+    "partnerName": "echo"
+}
