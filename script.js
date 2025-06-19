@@ -524,7 +524,7 @@ function addMessage(text, sender, correctedOriginalText = null, correctionExplan
 
     // Logic for displaying corrections and explanations (for AI messages only)
     // Show correction info only if it's an AI message AND correctedOriginalText is not null AND correctionExplanation is meaningful
-    if (sender === 'ai' && correctedOriginalText !== null && correctionExplanation && correctionExplanation !== 'None') {
+    if (sender === 'ai' && correctedOriginalText !== null && correctionExplanation && correctionExplanation.toLowerCase() !== 'none' && correctionExplanation.trim() !== '') {
         const correctionInfoSpan = document.createElement('span');
         correctionInfoSpan.classList.add('text-sm', 'text-gray-600', 'mt-1', 'block'); // Smaller, slightly dimmed text
         // Use a wrapper with tooltip for the original text and explanation
@@ -650,23 +650,26 @@ async function processUserInput(text) {
 
     try {
         // Construct the prompt for Gemini
+        // IMPORTANT: The prompt now explicitly asks for clean strings for CORRECTED and Explanation,
+        // and provides the expected JSON format more clearly.
         const promptTemplate = `You are a friendly and encouraging language partner. The user is practicing either Hindi or English.
 Your primary tasks are:
 1.  **Correct Grammar:** If the user's sentence has grammatical errors or unnatural phrasing, provide the corrected version.
 2.  **Explain Briefly:** If you made a correction, give a very brief explanation of *why* it was corrected (e.g., "tense correction", "word order"). If no correction is needed, state that the original sentence was correct.
 3.  **Conversational Response:** Provide a friendly, natural, and concise conversational response to the user's input, engaging them further.
 
-Output your response in the exact following JSON-like format to facilitate parsing:
-CORRECTED: [corrected or original sentence] (Explanation: [brief explanation or "None"])
-RESPONSE: [your conversational response]
+Output your response as a JSON object with the following keys. Ensure the values for CORRECTED and Explanation are plain strings, not containing additional JSON or formatting:
+{
+  "CORRECTED": "[corrected or original sentence, e.g., 'I am going to the store.']",
+  "Explanation": "[brief explanation or 'None', e.g., 'Subject-verb agreement']",
+  "RESPONSE": "[your conversational response, e.g., 'That's great! What are you planning to buy there?']"
+}
 
 Example if correction is needed:
-CORRECTED: I am going to the store. (Explanation: Subject-verb agreement)
-RESPONSE: That's great! What are you planning to buy there?
+{ "CORRECTED": "I am going to the store.", "Explanation": "Subject-verb agreement", "RESPONSE": "That's great! What are you planning to buy there?" }
 
 Example if no correction is needed:
-CORRECTED: I went to the park. (Explanation: None)
-RESPONSE: Oh, how wonderful! Did you have a good time?
+{ "CORRECTED": "I went to the park.", "Explanation": "None", "RESPONSE": "Oh, how wonderful! Did you have a good time?" }
 
 Now, please respond to: "%s"`;
 
@@ -732,8 +735,11 @@ Now, please respond to: "%s"`;
         let geminiText = geminiData.candidates && geminiData.candidates.length > 0 &&
                            geminiData.candidates[0].content && geminiData.candidates[0].content.parts &&
                            geminiData.candidates[0].content.parts.length > 0
-                           ? geminiData.candidates[0].content.parts[0].text
-                           : '';
+                           ? geminiData[0].content.parts[0].text // Assuming the response is often in this format
+                           : (geminiData.candidates && geminiData.candidates[0].content && geminiData.candidates[0].content.text)
+                             ? geminiData.candidates[0].content.text
+                             : '';
+
 
         if (!geminiText) {
             alertUser('AI response was empty or malformed.');
@@ -741,7 +747,7 @@ Now, please respond to: "%s"`;
             return;
         }
 
-        // NEW: Attempt to parse the response as JSON first
+        // Attempt to parse the response as JSON first
         let parsedAiResponse = {};
         let conversationalResponse = '';
         let correctedText = null;
@@ -765,27 +771,12 @@ Now, please respond to: "%s"`;
             }
 
         } catch (jsonError) {
-            console.warn("processUserInput: Failed to parse AI response as JSON. Falling back to regex. Error:", jsonError);
-            // Fallback if JSON.parse fails: attempt to extract using the previous regex for plain text format
-            const structuredRegex = /CORRECTED: (.*?)(?:\s+\(Explanation: (.*?)\))?\s+RESPONSE: (.*)/s;
-            const regexMatch = contentToParse.match(structuredRegex);
-
-            if (regexMatch) {
-                correctedText = regexMatch[1] ? regexMatch[1].trim() : text;
-                correctionExplanation = regexMatch[2] ? regexMatch[2].trim() : 'None';
-                conversationalResponse = regexMatch[3] ? regexMatch[3].trim() : '';
-
-                if (correctionExplanation.toLowerCase() === 'none' || correctionExplanation.trim() === '') {
-                    correctionExplanation = null;
-                }
-            } else {
-                // Absolute fallback: If no "RESPONSE:" tag found even in plain text, assume the entire original AI output is the response
-                // Do not prefix with "AI Response (format unexpected)" for cleaner look
-                conversationalResponse = geminiText.trim(); 
-                correctedText = null; 
-                correctionExplanation = null;
-                console.warn("processUserInput: Failed to parse AI response with any expected format. Displaying raw text.");
-            }
+            console.warn("processUserInput: Failed to parse AI response as JSON. Displaying raw text as conversational. Error:", jsonError);
+            // Fallback: If JSON.parse fails, treat the entire original AI output as the conversational response.
+            // This is the cleanest fallback for an unexpected format, avoiding partial parsing errors.
+            conversationalResponse = geminiText.trim(); 
+            correctedText = null; // No specific correction to show
+            correctionExplanation = null; // No specific explanation to show
         }
 
         // Ensure conversational response is not empty before adding
